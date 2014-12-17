@@ -1,0 +1,382 @@
+commit 107749519b64d2de64094e2423741fefbf655311
+Author: CODeRUS <coderusinbox@gmail.com>
+Date:   Wed Dec 17 21:31:03 2014 +0500
+
+    LauncherFolderIcons + LauncherGridAdvanced
+
+diff --git a/usr/share/lipstick-jolla-home-qt5/launcher/FolderIcon.qml b/usr/share/lipstick-jolla-home-qt5/launcher/FolderIcon.qml
+new file mode 100644
+index 0000000..fe7f92f
+--- /dev/null
++++ b/usr/share/lipstick-jolla-home-qt5/launcher/FolderIcon.qml
+@@ -0,0 +1,71 @@
++import QtQuick 2.0
++import Sailfish.Silica 1.0
++
++Rectangle {
++    property variant icons: []
++    property bool pressed
++
++    width: Theme.iconSizeLauncher
++    height: Theme.iconSizeLauncher
++    border.color: Theme.rgba(Theme.primaryColor, pressed ? 0.5 : 0.1)
++    border.width: 2
++    radius: Theme.paddingSmall
++    color: "transparent"
++
++    layer.effect: pressEffectComponent
++    layer.enabled: pressed
++
++    Flow {
++        id: folderIcons
++        anchors {
++            fill: parent
++            margins: Theme.paddingSmall
++        }
++        spacing: 0
++        Repeater {
++            model: icons
++            delegate: Image {
++                width: folderIcons.width / 2
++                height: folderIcons.width / 2
++
++                horizontalAlignment: Image.AlignHCenter
++                verticalAlignment: Image.AlignVCenter
++                fillMode: Image.Pad
++
++                sourceSize.width: width - Theme.paddingSmall / 2
++                sourceSize.height: height - Theme.paddingSmall / 2
++
++                smooth: true
++
++                source: {
++                    if (modelData.indexOf(':/') !== -1) {
++                        return modelData
++                    } else if (modelData.indexOf('/') === 0) {
++                        return 'file://' + modelData
++                    } else {
++                        return 'image://theme/' + modelData
++                    }
++                }
++            }
++        }
++    }
++
++    Component {
++        id: pressEffectComponent
++        ShaderEffect {
++            property variant source
++            property color color: Theme.rgba(Theme.highlightBackgroundColor, 0.4)
++            fragmentShader: "
++            uniform sampler2D source;
++            uniform highp vec4 color;
++            uniform lowp float qt_Opacity;
++            varying highp vec2 qt_TexCoord0;
++            void main(void)
++            {
++                highp vec4 pixelColor = texture2D(source, qt_TexCoord0);
++                gl_FragColor = vec4(mix(pixelColor.rgb/max(pixelColor.a, 0.00390625), color.rgb/max(color.a, 0.00390625), color.a) * pixelColor.a, pixelColor.a) * qt_Opacity;
++            }
++            "
++        }
++    }
++}
+diff --git a/usr/share/lipstick-jolla-home-qt5/launcher/LauncherFolder.qml b/usr/share/lipstick-jolla-home-qt5/launcher/LauncherFolder.qml
+index 608cafa..d84d7c9 100644
+--- a/usr/share/lipstick-jolla-home-qt5/launcher/LauncherFolder.qml
++++ b/usr/share/lipstick-jolla-home-qt5/launcher/LauncherFolder.qml
+@@ -17,7 +17,9 @@ Rectangle {
+     property bool appShowInProgress: switcher.appShowInProgress
+     property bool selectIcon
+     property Item iconSelector
+-    property int visibleRowCount: 4
++    property int initialCellWidth: (Screen.width - Theme.paddingLarge * 2) / 4
++    property int cellWidth: Math.round(initialCellWidth + (initialCellWidth - Theme.iconSizeLauncher) / (columns - 1))
++    property int cellHeight: Screen.height / 6
+ 
+     onAppShowInProgressChanged: if (appShowInProgress) close()
+ 
+@@ -28,6 +30,14 @@ Rectangle {
+         destroy(450)
+     }
+ 
++    function iconFolderItems(folder) {
++        var icons = []
++        for (var i = 0; i < folder.itemCount && i < 4; i++) {
++            icons.splice(icons.length, 0, folder.get(i).iconId)
++        }
++        return icons
++    }
++
+     Binding on opacity {
+         when: folderSwipeActive
+         value: 1.0 - folderSwipeProgress
+@@ -44,7 +54,7 @@ Rectangle {
+ 
+     gradient: Gradient {
+         GradientStop { position: 0.0; color: Theme.rgba("black", 1.0) }
+-        GradientStop { position: 1.0; color: Theme.rgba("black", 0.8) }
++        GradientStop { position: 1.0; color: Theme.rgba("black", selectIcon ? 1.0 : 0.8) }
+     }
+ 
+     width: Screen.width
+@@ -103,7 +113,7 @@ Rectangle {
+         Rectangle {
+             id: header
+             width: parent.width
+-            height: launcherGrid.cellHeight - Theme.fontSizeExtraSmall/2
++            height: launcherFolder.cellHeight - Theme.fontSizeExtraSmall/2
+             gradient: Gradient {
+                 GradientStop { position: 0.0; color: Theme.rgba(Theme.primaryColor, 0.0) }
+                 GradientStop { position: 1.0; color: Theme.rgba(Theme.primaryColor, 0.15) }
+@@ -111,19 +121,34 @@ Rectangle {
+ 
+             MouseArea {
+                 id: icon
+-                width: launcherGrid.cellWidth
++                width: launcherFolder.cellWidth
+                 height: parent.height
+-                LauncherIcon {
+-                    y: (launcherGrid.cellHeight - height - Theme.fontSizeExtraSmall)/2
+-                    icon: model.iconId
++                Loader {
++                    y: (launcherFolder.cellHeight - height - Theme.fontSizeExtraSmall)/2
+                     anchors.horizontalCenter: parent.horizontalCenter
+-                    pressed: icon.pressed && icon.containsMouse
+-                    Text {
+-                        font.pixelSize: Theme.fontSizeExtraLarge
+-                        font.family: Theme.fontFamilyHeading
+-                        color: Theme.primaryColor
+-                        text: model.itemCount
+-                        anchors.centerIn: parent
++                    sourceComponent: model.iconId == "icon-launcher-folder-00" ? headerFolderIconComponent : headerLauncherIconComponent
++                    active: true
++                }
++
++                Component {
++                    id: headerLauncherIconComponent
++                    LauncherIcon {
++                        icon: model.iconId
++                        pressed: icon.pressed && icon.containsMouse
++                        Text {
++                            font.pixelSize: Theme.fontSizeExtraLarge
++                            font.family: Theme.fontFamilyHeading
++                            color: Theme.primaryColor
++                            text: model.itemCount
++                            anchors.centerIn: parent
++                        }
++                    }
++                }
++                Component {
++                    id: headerFolderIconComponent
++                    FolderIcon {
++                        icons: iconFolderItems(model)
++                        pressed: folderIcon.pressed && folderIcon.containsMouse
+                     }
+                 }
+                 onClicked: {
+@@ -195,7 +220,7 @@ Rectangle {
+             // Use a clipper item to clip slightly outside the GridView area
+             anchors.top: header.bottom
+             width: parent.width
+-            height: launcherGrid.height + Theme.fontSizeExtraSmall
++            height: launcherGrid.height
+             clip: true
+ 
+             LauncherGrid {
+@@ -240,8 +265,7 @@ Rectangle {
+                 VerticalScrollDecorator {}
+ 
+                 y: Theme.fontSizeExtraSmall/2
+-                width: parent.width
+-                height: cellHeight * visibleRowCount
++                height: selectIcon ? Screen.height : (launcherFolder.height - header.height - footer.height)
+                 cacheBuffer: height
+                 displayMarginBeginning: Theme.fontSizeExtraSmall/2
+                 displayMarginEnd: Theme.fontSizeExtraSmall/2
+@@ -264,7 +288,7 @@ Rectangle {
+                 }
+                 return false
+             }
+-            height: launcherGrid.cellHeight - Theme.fontSizeExtraSmall/2
++            height: launcherFolder.cellHeight - Theme.fontSizeExtraSmall/2
+             width: parent.width
+             y: parent.height - (launcherGrid.launcherEditMode && launcherGrid.reorderItem ||
+                                 model.itemCount > launcherGrid.columns * visibleRowCount ? height : 0)
+@@ -301,27 +325,42 @@ Rectangle {
+             Behavior on opacity { FadeAnimation {} }
+             enabled: selectIcon
+             Repeater {
+-                model: 16
++                model: 17
+                 delegate: MouseArea {
+                     id: folderIcon
+-                    width: launcherGrid.cellWidth
+-                    height: launcherGrid.cellHeight
+-                    LauncherIcon {
++                    width: launcherFolder.cellWidth
++                    height: launcherFolder.cellHeight
++                    Loader {
+                         id: folderLauncherIcon
+                         anchors {
+                             centerIn: parent
+                             verticalCenterOffset: Math.round(-Theme.fontSizeExtraSmall/2)
+                         }
+-                        icon: "image://theme/icon-launcher-folder-" + (index >= 9 ? (index+1) : "0" + (index+1))
+-                        pressed: folderIcon.pressed && folderIcon.containsMouse
+-                        opacity: icon.indexOf(launcherFolder.model.iconId) !== -1 ? 0.3 : 1.0
++                        sourceComponent: index == 0  ? folderIconComponent : launcherIconComponent
++                        active: true
++                    }
++                    Component {
++                        id: launcherIconComponent
++                        LauncherIcon {
++                            icon: "image://theme/icon-launcher-folder-" + (index >= 10 ? index : "0" + index)
++                            pressed: folderIcon.pressed && folderIcon.containsMouse
++                            opacity: icon.indexOf(launcherFolder.model.iconId) !== -1 ? 0.3 : 1.0
++                        }
++                    }
++                    Component {
++                        id: folderIconComponent
++                        FolderIcon {
++                            icons: iconFolderItems(launcherFolder.model)
++                            pressed: folderIcon.pressed && folderIcon.containsMouse
++                            opacity: launcherGrid.model.iconId == "icon-launcher-folder-00" ? 0.3 : 1.0
++                        }
+                     }
+                     Image {
+                         anchors.centerIn: folderLauncherIcon
+-                        source: folderLauncherIcon.opacity !== 1.0 ? "image://theme/icon-s-installed" : ""
++                        source: folderLauncherIcon.item.opacity !== 1.0 ? "image://theme/icon-s-installed" : ""
+                     }
+                     onClicked: {
+-                        launcherGrid.model.iconId = "icon-launcher-folder-" + (index >= 9 ? (index+1) : "0" + (index+1))
++                        launcherGrid.model.iconId = "icon-launcher-folder-" + (index >= 10 ? index : "0" + index)
+                         selectIcon = false
+                     }
+                 }
+diff --git a/usr/share/lipstick-jolla-home-qt5/launcher/LauncherGrid.qml b/usr/share/lipstick-jolla-home-qt5/launcher/LauncherGrid.qml
+index 14b8538..4835046 100644
+--- a/usr/share/lipstick-jolla-home-qt5/launcher/LauncherGrid.qml
++++ b/usr/share/lipstick-jolla-home-qt5/launcher/LauncherGrid.qml
+@@ -11,15 +11,25 @@ import Sailfish.Silica 1.0
+ import Sailfish.Silica.private 1.0
+ import Sailfish.Lipstick 1.0
+ import org.nemomobile.dbus 1.0
++import org.nemomobile.configuration 1.0
+ 
+ SilicaGridView {
+     id: gridview
+ 
++    ConfigurationGroup {
++        id: launcherSettings
++        path: "/apps/lipstick-jolla-home-qt5/settings"
++        property int launcherColumns: 5
++        property bool firstRowLabel: false
++        property bool changeFontSize: true
++    }
++
+     property Item reorderItem
+     property Item movingItem
+-    property int columns: 4
+-    property int initialCellWidth: (desktop.width - Theme.paddingLarge * 2) / columns
+-    property real firstRowOpacity: Math.min(Math.max((dashboard.contentY - dashboard.lockscreenAndStatusAreaHeight)/cellHeight, 0.0), 1.0)
++    property int columns: launcherSettings.launcherColumns
++    property real scaleFactor: 4 / columns
++    property int initialCellWidth: (Screen.width - Theme.paddingLarge * 2) / columns
++    property real firstRowOpacity: launcherSettings.firstRowLabel ? 1.0 : Math.min(Math.max((dashboard.contentY - dashboard.lockscreenAndStatusAreaHeight)/cellHeight, 0.0), 1.0)
+     property bool launcherEditMode: desktop.removeApplicationEnabled
+     property var launcherModel: model
+     property bool rootFolder
+@@ -31,8 +41,8 @@ SilicaGridView {
+     width: cellWidth * columns
+     anchors.horizontalCenter: parent.horizontalCenter
+     // Increase cellWidth so that icon vertical edges are Theme.paddingLarge away from display edges
+-    cellWidth: Math.round(initialCellWidth + (initialCellWidth - Theme.iconSizeLauncher) / (columns - 1))
+-    cellHeight: Math.round(Screen.height / 6)
++    cellWidth: Math.round(initialCellWidth + (columns > 1 ? (initialCellWidth - Theme.iconSizeLauncher * scaleFactor) / (columns - 1) : 0))
++    cellHeight: columns > 1 ? Math.round(Screen.height / Math.round(Screen.height / Math.round(Screen.height / 6 * scaleFactor))) : (Screen.height / 2)
+ 
+     function categoryQsTrIds() {
+         //% "AudioVideo"
+@@ -86,6 +96,14 @@ SilicaGridView {
+         desktop.removeApplicationEnabled = enabled
+     }
+ 
++    function iconFolderItems(folder) {
++        var icons = []
++        for (var i = 0; i < folder.itemCount && i < 4; i++) {
++            icons.splice(icons.length, 0, folder.get(i).iconId)
++        }
++        return icons
++    }
++
+     Image {
+         id: newFolderIcon
+         property bool active
+@@ -436,23 +454,43 @@ SilicaGridView {
+                 NumberAnimation { target: launcherItem; property: "opacity"; to: 1.0; duration: 75 }
+             }
+ 
+-            LauncherIcon {
++            Loader {
+                 id: launcherIcon
+                 anchors {
+                     centerIn: parent
+-                    verticalCenterOffset: rootFolder && index <= 3  ? 0 : Math.round(-launcherText.height/2)
++                    verticalCenterOffset: rootFolder && index < gridview.columns  ? 0 : Math.round(-launcherText.height/2)
++                }
++                sourceComponent: model.object.iconId === "icon-launcher-folder-00" ? folderIconComponent : launcherIconComponent
++                active: true
++            }
++
++            Component {
++                id: launcherIconComponent
++                LauncherIcon {
++                    icon: model.object.iconId
++                    width: Theme.iconSizeLauncher * gridview.scaleFactor
++                    height: Theme.iconSizeLauncher * gridview.scaleFactor
++                    sourceSize.width: Theme.iconSizeLauncher * gridview.scaleFactor
++                    sourceSize.height: Theme.iconSizeLauncher * gridview.scaleFactor
++                    pressed: down
++                    opacity: isUpdating && folderItemCount == 0 ? 0.2 : 1.0
++                    Text {
++                        font.pixelSize: Theme.fontSizeExtraLarge
++                        font.family: Theme.fontFamilyHeading
++                        text: folderItemCount > 0 ? folderItemCount : ""
++                        color: Theme.primaryColor
++                        anchors.centerIn: parent
++                        visible: !isUpdating || model.object.updatingProgress < 0 || model.object.updatingProgress > 100
++                        opacity: reorderItem && folderItemCount >= 99 ? 0.3 : 1.0
++                    }
+                 }
+-                icon: model.object.iconId
+-                pressed: down
+-                opacity: isUpdating && folderItemCount == 0 ? 0.2 : 1.0
+-                Text {
+-                    font.pixelSize: Theme.fontSizeExtraLarge
+-                    font.family: Theme.fontFamilyHeading
+-                    text: folderItemCount > 0 ? folderItemCount : ""
+-                    color: Theme.primaryColor
+-                    anchors.centerIn: parent
+-                    visible: !isUpdating || model.object.updatingProgress < 0 || model.object.updatingProgress > 100
+-                    opacity: reorderItem && folderItemCount >= 99 ? 0.3 : 1.0
++            }
++
++            Component {
++                id: folderIconComponent
++                FolderIcon {
++                    icons: iconFolderItems(model.object)
++                    pressed: down
+                 }
+             }
+ 
+@@ -473,7 +511,7 @@ SilicaGridView {
+                 elide: Text.ElideRight
+ 
+                 color: down ? Theme.highlightColor : Theme.primaryColor
+-                font.pixelSize: Theme.fontSizeTiny
++                font.pixelSize: launcherSettings.changeFontSize ? (Theme.fontSizeTiny * gridview.scaleFactor) : Theme.fontSizeTiny
+                 text: object.title
+                 visible: !launcherEditMode || itemType === LauncherModel.Folder
+             }
