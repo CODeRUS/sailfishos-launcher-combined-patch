@@ -11,7 +11,7 @@ BuildArch: noarch
 
 Summary:    Launcher combined patches
 Version:    0.0.1
-Release:    2
+Release:    3
 Group:      Qt/Qt
 License:    TODO
 Source0:    %{name}-%{version}.tar.bz2

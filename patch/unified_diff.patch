@@ -1,12 +1,12 @@
-commit 107749519b64d2de64094e2423741fefbf655311
+commit 411c811f01da4ba769c46c8364dbdebc52dd0623
 Author: CODeRUS <coderusinbox@gmail.com>
-Date:   Wed Dec 17 21:31:03 2014 +0500
+Date:   Wed Dec 17 22:24:08 2014 +0500
 
-    LauncherFolderIcons + LauncherGridAdvanced
+    LauncherGridAdvanced + LauncherFolderIcons
 
 diff --git a/usr/share/lipstick-jolla-home-qt5/launcher/FolderIcon.qml b/usr/share/lipstick-jolla-home-qt5/launcher/FolderIcon.qml
 new file mode 100644
-index 0000000..fe7f92f
+index 0000000..0e9d6cb
 --- /dev/null
 +++ b/usr/share/lipstick-jolla-home-qt5/launcher/FolderIcon.qml
 @@ -0,0 +1,71 @@
@@ -82,7 +82,7 @@ index 0000000..fe7f92f
 +    }
 +}
 diff --git a/usr/share/lipstick-jolla-home-qt5/launcher/LauncherFolder.qml b/usr/share/lipstick-jolla-home-qt5/launcher/LauncherFolder.qml
-index 608cafa..d84d7c9 100644
+index 608cafa..c27ab49 100644
 --- a/usr/share/lipstick-jolla-home-qt5/launcher/LauncherFolder.qml
 +++ b/usr/share/lipstick-jolla-home-qt5/launcher/LauncherFolder.qml
 @@ -17,7 +17,9 @@ Rectangle {
@@ -91,7 +91,7 @@ index 608cafa..d84d7c9 100644
      property Item iconSelector
 -    property int visibleRowCount: 4
 +    property int initialCellWidth: (Screen.width - Theme.paddingLarge * 2) / 4
-+    property int cellWidth: Math.round(initialCellWidth + (initialCellWidth - Theme.iconSizeLauncher) / (columns - 1))
++    property int cellWidth: Math.round(initialCellWidth + (initialCellWidth - Theme.iconSizeLauncher) / 3)
 +    property int cellHeight: Screen.height / 6
  
      onAppShowInProgressChanged: if (appShowInProgress) close()
@@ -171,7 +171,7 @@ index 608cafa..d84d7c9 100644
 +                    id: headerFolderIconComponent
 +                    FolderIcon {
 +                        icons: iconFolderItems(model)
-+                        pressed: folderIcon.pressed && folderIcon.containsMouse
++                        pressed: icon.pressed && icon.containsMouse
                      }
                  }
                  onClicked: {
@@ -194,16 +194,32 @@ index 608cafa..d84d7c9 100644
                  cacheBuffer: height
                  displayMarginBeginning: Theme.fontSizeExtraSmall/2
                  displayMarginEnd: Theme.fontSizeExtraSmall/2
-@@ -264,7 +288,7 @@ Rectangle {
+@@ -264,14 +288,12 @@ Rectangle {
                  }
                  return false
              }
 -            height: launcherGrid.cellHeight - Theme.fontSizeExtraSmall/2
 +            height: launcherFolder.cellHeight - Theme.fontSizeExtraSmall/2
              width: parent.width
-             y: parent.height - (launcherGrid.launcherEditMode && launcherGrid.reorderItem ||
-                                 model.itemCount > launcherGrid.columns * visibleRowCount ? height : 0)
-@@ -301,27 +325,42 @@ Rectangle {
+-            y: parent.height - (launcherGrid.launcherEditMode && launcherGrid.reorderItem ||
+-                                model.itemCount > launcherGrid.columns * visibleRowCount ? height : 0)
++            y: parent.height
+             Behavior on y { NumberAnimation { duration: 300; easing.type: Easing.InOutQuad } }
+             opacity: launcherGrid.launcherEditMode && launcherGrid.reorderItem ?
+-                         (draggedIntoFooter ? 1.0 : 0.5) :
+-                         (model.itemCount > launcherGrid.columns * visibleRowCount ? 0.5 : 0.0)
++                         (draggedIntoFooter ? 1.0 : 0.5) : 0.0
+             Behavior on opacity { FadeAnimation {} }
+             color: Theme.highlightDimmerColor
+             gradient: Gradient {
+@@ -296,32 +318,48 @@ Rectangle {
+     Component {
+         id: iconSelectorComponent
+         Grid {
+-            anchors.fill: launcherGrid
++            height: parent.height
++            anchors.horizontalCenter: parent.horizontalCenter
+             opacity: selectIcon ? 1.0 : 0.0
              Behavior on opacity { FadeAnimation {} }
              enabled: selectIcon
              Repeater {
@@ -256,7 +272,7 @@ index 608cafa..d84d7c9 100644
                      }
                  }
 diff --git a/usr/share/lipstick-jolla-home-qt5/launcher/LauncherGrid.qml b/usr/share/lipstick-jolla-home-qt5/launcher/LauncherGrid.qml
-index 14b8538..4835046 100644
+index 14b8538..c5c0835 100644
 --- a/usr/share/lipstick-jolla-home-qt5/launcher/LauncherGrid.qml
 +++ b/usr/share/lipstick-jolla-home-qt5/launcher/LauncherGrid.qml
 @@ -11,15 +11,25 @@ import Sailfish.Silica 1.0
@@ -314,7 +330,7 @@ index 14b8538..4835046 100644
      Image {
          id: newFolderIcon
          property bool active
-@@ -436,23 +454,43 @@ SilicaGridView {
+@@ -436,23 +454,45 @@ SilicaGridView {
                  NumberAnimation { target: launcherItem; property: "opacity"; to: 1.0; duration: 75 }
              }
  
@@ -366,12 +382,14 @@ index 14b8538..4835046 100644
 +            Component {
 +                id: folderIconComponent
 +                FolderIcon {
++                    width: Theme.iconSizeLauncher * gridview.scaleFactor
++                    height: Theme.iconSizeLauncher * gridview.scaleFactor
 +                    icons: iconFolderItems(model.object)
 +                    pressed: down
                  }
              }
  
-@@ -473,7 +511,7 @@ SilicaGridView {
+@@ -473,7 +513,7 @@ SilicaGridView {
                  elide: Text.ElideRight
  
                  color: down ? Theme.highlightColor : Theme.primaryColor
