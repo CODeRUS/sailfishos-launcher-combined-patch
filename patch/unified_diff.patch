@@ -50,7 +50,7 @@ index 0000000..fe7f92f
 +                smooth: true
 +
 +                source: {
-+                    if (modelData.indexOf(':/') !== -1) {
++                    if (modelData.indexOf(':/') !== -1 || modelData.indexOf("data:") == 0) {
 +                        return modelData
 +                    } else if (modelData.indexOf('/') === 0) {
 +                        return 'file://' + modelData
