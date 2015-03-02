@@ -1,0 +1,16 @@
+{
+    "translation_catalog": "sailfishos-launcher-combined-patch",
+    "entries": [
+        {
+            "path": "system_settings/look_and_feel/sailfishos-launcher-combined-patch",
+            "type": "page",
+            "title": "Launcher settings",
+            "translation_id": "sailfishos-launcher-combined-patch-title",
+            "icon": "/usr/share/patchmanager/icons/icon-m-patchmanager.png",
+            "order": 5000,
+            "params": {
+                "source": "/usr/share/jolla-settings/pages/sailfishos-launcher-combined-patch/main.qml"
+            }
+        }
+    ]
+}
