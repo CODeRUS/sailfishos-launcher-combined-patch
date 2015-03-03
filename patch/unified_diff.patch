@@ -1,16 +1,18 @@
-commit 9e691fbeb249630e7ae92f5eb3b41cf3a2a567d2
+commit 4cc5e14d02b15111ffd434c6797c514b7a0340b5
 Author: CODeRUS <coderusinbox@gmail.com>
-Date:   Tue Mar 3 04:43:54 2015 +0500
+Date:   Wed Mar 4 02:16:35 2015 +0500
 
-    Test launcher combined patch v2
+    Launcher combined patch
 
 diff --git a/usr/share/lipstick-jolla-home-qt5/launcher/LauncherFolder.qml b/usr/share/lipstick-jolla-home-qt5/launcher/LauncherFolder.qml
-index b888365..1b4e7ee 100644
+index b888365..d785618 100644
 --- a/usr/share/lipstick-jolla-home-qt5/launcher/LauncherFolder.qml
 +++ b/usr/share/lipstick-jolla-home-qt5/launcher/LauncherFolder.qml
-@@ -11,12 +11,20 @@ import Sailfish.Silica 1.0
+@@ -10,13 +10,23 @@ import org.nemomobile.lipstick 0.1
+ import Sailfish.Silica 1.0
  import Sailfish.Silica.private 1.0
  import Sailfish.Lipstick 1.0
++import org.nemomobile.dbus 1.0
  
 -Rectangle {
 +Page {
@@ -28,10 +30,11 @@ index b888365..1b4e7ee 100644
 +    property var dashboard
 +    property var desktop
 +    property var launcher
++    property Item remorse
  
      Connections {
          target: switcher
-@@ -24,19 +32,22 @@ Rectangle {
+@@ -24,19 +34,61 @@ Rectangle {
      }
  
      function close() {
@@ -41,11 +44,8 @@ index b888365..1b4e7ee 100644
 -        enabled = false
 -        destroy(450)
 +        pageStack.navigateBack()
-     }
- 
--    Binding on opacity {
--        when: folderSwipeActive
--        value: 1.0 - folderSwipeProgress
++    }
++
 + 
 +    function iconFolderItems(folder) {
 +        var icons = []
@@ -53,6 +53,48 @@ index b888365..1b4e7ee 100644
 +            icons.splice(icons.length, 0, folder.get(i).iconId)
 +        }
 +        return icons
++    }
++
++    function removeApplication(desktopFile, title) {
++        if (!remorse) {
++            remorse = remorseComponent.createObject(launcherFolder)
++        } else if (remorse.desktopFile !== "" && remorse.desktopFile !== desktopFile) {
++            remorse.removePackageByDesktopFile()
++            remorse.cancel()
++        }
++        remorse.desktopFile = desktopFile
++
++        //: Notification indicating that an application will be removed, %1 will be replaced by application name
++        //% "Removing %1"
++        remorse.execute(qsTrId("lipstick-jolla-home-no-removing").arg(title))
+     }
+ 
+-    Binding on opacity {
+-        when: folderSwipeActive
+-        value: 1.0 - folderSwipeProgress
++    Component {
++        id: remorseComponent
++
++        RemorsePopup {
++            property string desktopFile
++
++            function removePackageByDesktopFile() {
++                if (desktopFile !== "") {
++                    storeClientInterface.call("removePackageByDesktopFile", desktopFile)
++                    desktopFile = ""
++                }
++            }
++
++            z: 100
++            onTriggered: removePackageByDesktopFile()
++
++            DBusInterface {
++                id: storeClientInterface
++                destination: "com.jolla.jollastore"
++                path: "/StoreClient"
++                iface: "com.jolla.jollastore"
++            }
++        }
      }
  
      z: 10
@@ -61,7 +103,7 @@ index b888365..1b4e7ee 100644
      Behavior on opacity {
          SmoothedAnimation {
              duration: 400
-@@ -44,16 +55,6 @@ Rectangle {
+@@ -44,16 +96,6 @@ Rectangle {
          }
      }
  
@@ -78,7 +120,7 @@ index b888365..1b4e7ee 100644
      Connections {
          target: Lipstick.compositor
          onDisplayOff: launcherFolder.close()
-@@ -105,27 +106,43 @@ Rectangle {
+@@ -105,27 +147,43 @@ Rectangle {
          Rectangle {
              id: header
              width: parent.width
@@ -134,7 +176,7 @@ index b888365..1b4e7ee 100644
                      }
                  }
                  onClicked: {
-@@ -142,7 +159,7 @@ Rectangle {
+@@ -142,7 +200,7 @@ Rectangle {
  
              TextField {
                  id: titleEditor
@@ -143,7 +185,7 @@ index b888365..1b4e7ee 100644
                  anchors {
                      left: icon.right
                      leftMargin: -Theme.paddingLarge
-@@ -197,8 +214,8 @@ Rectangle {
+@@ -197,8 +255,8 @@ Rectangle {
              // Use a clipper item to clip slightly outside the GridView area
              anchors.top: header.bottom
              width: parent.width
@@ -154,7 +196,7 @@ index b888365..1b4e7ee 100644
  
              LauncherGrid {
                  id: launcherGrid
-@@ -244,8 +261,7 @@ Rectangle {
+@@ -244,8 +302,7 @@ Rectangle {
                  VerticalScrollDecorator {}
  
                  y: Theme.fontSizeExtraSmall/2
@@ -164,7 +206,7 @@ index b888365..1b4e7ee 100644
                  cacheBuffer: height
                  displayMarginBeginning: Theme.fontSizeExtraSmall/2
                  displayMarginEnd: Theme.fontSizeExtraSmall/2
-@@ -262,20 +278,17 @@ Rectangle {
+@@ -262,20 +319,17 @@ Rectangle {
                  if (item) {
                      // The odd launcherGrid.reorderItem.y line below is to force revaluation of this binding
                      launcherGrid.reorderItem.y
@@ -190,7 +232,7 @@ index b888365..1b4e7ee 100644
              Behavior on opacity { FadeAnimation {} }
              color: Theme.highlightDimmerColor
              gradient: Gradient {
-@@ -285,6 +298,7 @@ Rectangle {
+@@ -285,6 +339,7 @@ Rectangle {
          }
          Label {
              x: Theme.paddingLarge
@@ -198,7 +240,7 @@ index b888365..1b4e7ee 100644
              width: parent.width - 2*Theme.paddingLarge
              anchors.verticalCenter: footer.verticalCenter
              color: Theme.highlightColor
-@@ -300,32 +314,48 @@ Rectangle {
+@@ -300,32 +355,48 @@ Rectangle {
      Component {
          id: iconSelectorComponent
          Grid {
@@ -258,7 +300,7 @@ index b888365..1b4e7ee 100644
                      }
                  }
 diff --git a/usr/share/lipstick-jolla-home-qt5/launcher/LauncherGrid.qml b/usr/share/lipstick-jolla-home-qt5/launcher/LauncherGrid.qml
-index 6f35aad..24f8e06 100644
+index 6f35aad..41e0b35 100644
 --- a/usr/share/lipstick-jolla-home-qt5/launcher/LauncherGrid.qml
 +++ b/usr/share/lipstick-jolla-home-qt5/launcher/LauncherGrid.qml
 @@ -11,29 +11,40 @@ import Sailfish.Silica 1.0
@@ -451,3 +493,12 @@ index 6f35aad..24f8e06 100644
              }
  
              Component {
+@@ -505,7 +547,7 @@ SilicaGridView {
+                     enabled: launcherEditMode
+                     opacity: enabled ? 1.0 : 0.0
+                     visible: launcherEditMode && itemType == LauncherModel.Application && appControl.isUninstallable(object.filePath) && !object.isUpdating
+-                    onClicked: launcher.removeApplication(object.filePath, object.title)
++                    onClicked: removeApplication(object.filePath, object.title)
+                 }
+             }
+         }

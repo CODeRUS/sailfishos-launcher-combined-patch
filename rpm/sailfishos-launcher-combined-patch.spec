@@ -10,7 +10,7 @@ BuildArch: noarch
 # << macros
 
 Summary:    Launcher combined patches
-Version:    0.1.0
+Version:    0.1.1
 Release:    1
 Group:      Qt/Qt
 License:    TODO
@@ -44,8 +44,8 @@ mkdir -p %{buildroot}/usr/share/patchmanager/patches/sailfishos-launcher-combine
 cp -r patch/* %{buildroot}/usr/share/patchmanager/patches/sailfishos-launcher-combined-patch
 mkdir -p %{buildroot}/usr/share/lipstick-jolla-home-qt5/launcher
 cp -r data/*.qml %{buildroot}/usr/share/lipstick-jolla-home-qt5/launcher
-mkdir -p %{buildroot}/usr/share/jolla-settings/pages/sailfishos-mazelock-patch
-cp -r settings/*.qml %{buildroot}/usr/share/jolla-settings/pages/sailfishos-mazelock-patch
+mkdir -p %{buildroot}/usr/share/jolla-settings/pages/sailfishos-launcher-combined-patch
+cp -r settings/*.qml %{buildroot}/usr/share/jolla-settings/pages/sailfishos-launcher-combined-patch
 mkdir -p %{buildroot}/usr/share/jolla-settings/entries
 cp -r settings/*.json %{buildroot}/usr/share/jolla-settings/entries/
 # << install pre
