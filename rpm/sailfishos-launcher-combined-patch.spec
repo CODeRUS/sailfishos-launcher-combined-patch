@@ -10,13 +10,13 @@ BuildArch: noarch
 # << macros
 
 Summary:    Launcher combined patches
-Version:    0.1.1
+Version:    0.1.2
 Release:    1
 Group:      Qt/Qt
 License:    TODO
 Source0:    %{name}-%{version}.tar.bz2
 Requires:   patchmanager
-Requires:   lipstick-jolla-home-qt5 >= 0.22.44.7
+Requires:   lipstick-jolla-home-qt5 >= 0.24.41.3
 
 %description
 A homescreen patches for changing launcher grid size and adding new icon style showing folder icons
@@ -46,6 +46,7 @@ mkdir -p %{buildroot}/usr/share/lipstick-jolla-home-qt5/launcher
 cp -r data/*.qml %{buildroot}/usr/share/lipstick-jolla-home-qt5/launcher
 mkdir -p %{buildroot}/usr/share/jolla-settings/pages/sailfishos-launcher-combined-patch
 cp -r settings/*.qml %{buildroot}/usr/share/jolla-settings/pages/sailfishos-launcher-combined-patch
+cp -r settings/*.png %{buildroot}/usr/share/jolla-settings/pages/sailfishos-launcher-combined-patch
 mkdir -p %{buildroot}/usr/share/jolla-settings/entries
 cp -r settings/*.json %{buildroot}/usr/share/jolla-settings/entries/
 # << install pre

@@ -6,7 +6,7 @@
             "type": "page",
             "title": "Launcher settings",
             "translation_id": "sailfishos-launcher-combined-patch-title",
-            "icon": "/usr/share/patchmanager/icons/icon-m-patchmanager.png",
+            "icon": "/usr/share/jolla-settings/pages/sailfishos-launcher-combined-patch/icon-m-patchmanager-launcher.png",
             "order": 5000,
             "params": {
                 "source": "/usr/share/jolla-settings/pages/sailfishos-launcher-combined-patch/main.qml"
