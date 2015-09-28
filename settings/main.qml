@@ -108,7 +108,7 @@ Page {
 
             TextSwitch {
                 width: parent.width
-                text: "Free scroll view"
+                text: "Scroll without pages"
                 checked: launcherSettings.freeScroll
                 onClicked: launcherSettings.freeScroll = checked
             }

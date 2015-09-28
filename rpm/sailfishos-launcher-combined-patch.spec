@@ -3,7 +3,7 @@ Name:       sailfishos-launcher-combined-patch
 BuildArch: noarch
 
 Summary:    Launcher combined patches
-Version:    0.2.0
+Version:    0.2.2
 Release:    1
 Group:      Qt/Qt
 License:    TODO
