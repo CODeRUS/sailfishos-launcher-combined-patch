@@ -14,25 +14,11 @@ Item {
     Image {
         width: iconSize
         height: iconSize
-        anchors.top: parent.top
-        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
 
         visible: icons.length > 3
         source: visible ? iconSource(icons[3]) : ""
-
-        smooth: !iconIsLink(source)
-
-        rotation: -25
-    }
-
-    Image {
-        width: iconSize
-        height: iconSize
-        anchors.top: parent.top
-        anchors.left: parent.left
-
-        visible: icons.length > 2
-        source: visible ? iconSource(icons[2]) : ""
 
         smooth: !iconIsLink(source)
 
@@ -43,7 +29,21 @@ Item {
         width: iconSize
         height: iconSize
         anchors.bottom: parent.bottom
-        anchors.left: parent.left
+        anchors.right: parent.right
+
+        visible: icons.length > 2
+        source: visible ? iconSource(icons[2]) : ""
+
+        smooth: !iconIsLink(source)
+
+        rotation: -25
+    }
+
+    Image {
+        width: iconSize
+        height: iconSize
+        anchors.top: parent.top
+        anchors.right: parent.right
 
         visible: icons.length > 1
         source: visible ? iconSource(icons[1]) : ""
@@ -56,8 +56,8 @@ Item {
     Image {
         width: iconSize
         height: iconSize
-        anchors.bottom: parent.bottom
-        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.left: parent.left
 
         visible: icons.length > 0
         source: visible ? iconSource(icons[0]) : ""

@@ -17,8 +17,8 @@ Item {
         anchors.top: parent.top
         anchors.right: parent.right
 
-        visible: icons.length > 3
-        source: visible ? iconSource(icons[3]) : ""
+        visible: icons.length > 1
+        source: visible ? iconSource(icons[1]) : ""
 
         smooth: !iconIsLink(source)
     }
@@ -27,6 +27,18 @@ Item {
         width: iconSize
         height: iconSize
         anchors.top: parent.top
+        anchors.left: parent.left
+
+        visible: icons.length > 0
+        source: visible ? iconSource(icons[0]) : ""
+
+        smooth: !iconIsLink(source)
+    }
+
+    Image {
+        width: iconSize
+        height: iconSize
+        anchors.bottom: parent.bottom
         anchors.left: parent.left
 
         visible: icons.length > 2
@@ -39,22 +51,10 @@ Item {
         width: iconSize
         height: iconSize
         anchors.bottom: parent.bottom
-        anchors.left: parent.left
-
-        visible: icons.length > 1
-        source: visible ? iconSource(icons[1]) : ""
-
-        smooth: !iconIsLink(source)
-    }
-
-    Image {
-        width: iconSize
-        height: iconSize
-        anchors.bottom: parent.bottom
         anchors.right: parent.right
 
-        visible: icons.length > 0
-        source: visible ? iconSource(icons[0]) : ""
+        visible: icons.length > 3
+        source: visible ? iconSource(icons[3]) : ""
 
         smooth: !iconIsLink(source)
     }

@@ -14,8 +14,8 @@ Item {
     Image {
         width: iconSize
         height: iconSize
-        anchors.left: parent.left
-        anchors.top: parent.top
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
 
         visible: icons.length > 2
         source: visible ? iconSource(icons[2]) : ""
@@ -37,8 +37,8 @@ Item {
     Image {
         width: iconSize
         height: iconSize
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.top: parent.top
 
         visible: icons.length > 0
         source: visible ? iconSource(icons[0]) : ""

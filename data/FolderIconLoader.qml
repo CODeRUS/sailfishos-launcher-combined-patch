@@ -18,13 +18,19 @@ Item {
     property int index: parseInt(icon.substr(-2, 2)) - 1
     property bool isFolder: folder.type == LauncherModel.Folder
 
-    layer.effect: pressEffectComponent
-    layer.enabled: isFolder && index > 15 && pressed
+    Item {
+    	anchors.centerIn: parent
+    	width: root.size * 1.5
+    	height: root.size * 1.5
 
-    Loader {
-        id: loader
-        anchors.centerIn: parent
-        sourceComponent: !isFolder || index < 16 ? defaultFolderIcon : extraFolderIconPool[index - 16]
+	    layer.effect: pressEffectComponent
+	    layer.enabled: root.isFolder && root.index > 15 && root.pressed
+
+	    Loader {
+	        id: loader
+	        anchors.centerIn: parent
+	        sourceComponent: !isFolder || index < 16 ? defaultFolderIcon : extraFolderIconPool[index - 16]
+	    }
     }
 
     Component {

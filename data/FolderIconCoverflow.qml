@@ -6,8 +6,8 @@ Item {
     property bool pressed
 
     property int size: Theme.iconSizeLauncher
-    property int sideIconSize: size * 0.9
-    property int centerIconSize: size * 0.8
+    property int sideIconSize: size * 0.8
+    property int centerIconSize: size * 0.9
 
     width: size
     height: size
@@ -19,6 +19,7 @@ Item {
         height: sideIconSize
         anchors.horizontalCenter: centerImage.left
         anchors.verticalCenter: centerImage.verticalCenter
+        anchors.verticalCenterOffset: Theme.paddingSmall
 
         visible: icons.length > 1
         source: visible ? iconSource(icons[1]) : ""
@@ -35,6 +36,7 @@ Item {
         height: sideIconSize
         anchors.horizontalCenter: centerImage.right
         anchors.verticalCenter: centerImage.verticalCenter
+        anchors.verticalCenterOffset: -Theme.paddingSmall
 
         visible: icons.length > 2
         source: visible ? iconSource(icons[2]) : ""
