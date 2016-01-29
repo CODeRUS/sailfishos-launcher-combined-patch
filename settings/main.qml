@@ -18,6 +18,8 @@ Page {
         path: "/apps/lipstick-jolla-home-qt5/launcherGrid"
         property int columns: 4
         property int rows: 6
+        property int lcolumns: 4
+        property int lrows: 4
         property bool editLabelVisible: true
         property bool zoomIcons: false
         property bool zoomFonts: false
@@ -28,6 +30,7 @@ Page {
         id: launcherSettings
         path: "/apps/lipstick-jolla-home-qt5/launcher"
         property bool freeScroll: false
+        property bool useScroll: true
     }
 
     SilicaFlickable {
@@ -46,7 +49,7 @@ Page {
             }
 
             SectionHeader {
-                text: "Grid"
+                text: "Grid portrait"
             }
 
             Slider {
@@ -71,6 +74,38 @@ Page {
                 valueText: value
 
                 onValueChanged: launcherGridSettings.rows = Math.round(value)
+            }
+
+            SectionHeader {
+                text: "Grid landscape"
+            }
+
+            Slider {
+                width: parent.width
+                label: "Columns count"
+                maximumValue: 10
+                minimumValue: 2
+                stepSize: 1
+                value: launcherGridSettings.lcolumns
+                valueText: value
+
+                onReleased: launcherGridSettings.lcolumns = Math.round(value)
+            }
+
+            Slider {
+                width: parent.width
+                label: "Rows count"
+                maximumValue: 10
+                minimumValue: 2
+                stepSize: 1
+                value: launcherGridSettings.lrows
+                valueText: value
+
+                onValueChanged: launcherGridSettings.lrows = Math.round(value)
+            }
+
+            SectionHeader {
+                text: "Common"
             }
 
             TextSwitch {
@@ -111,6 +146,14 @@ Page {
                 text: "Scroll without pages"
                 checked: launcherSettings.freeScroll
                 onClicked: launcherSettings.freeScroll = checked
+            }
+
+            TextSwitch {
+                width: parent.width
+                text: "Show scrollbar"
+                checked: launcherSettings.useScroll
+                visible: launcherSettings.freeScroll
+                onClicked: launcherSettings.useScroll = checked
             }
 
             SectionHeader {

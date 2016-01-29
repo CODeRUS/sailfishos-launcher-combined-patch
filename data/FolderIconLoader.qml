@@ -69,7 +69,7 @@ Item {
 
     property var extraFolderIconPool: [
         folderIconGridComponent,
-        folderIconCoverflowComponent,
+        folderIconBigGridComponent,
         folderIconCascadeComponent,
         folderIconStackComponent
     ]
@@ -83,9 +83,9 @@ Item {
     }
 
     Component {
-        id: folderIconCoverflowComponent
-        FolderIconCoverflow {
-            icons: iconFolderItems(3)
+        id: folderIconBigGridComponent
+        FolderIconBigGrid {
+            icons: iconFolderItems(9)
             size: root.size
         }
     }
