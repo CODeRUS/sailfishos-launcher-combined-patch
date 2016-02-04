@@ -391,10 +391,10 @@ index 7d3ec17..8a725f3 100644
      }
  }
 diff --git a/launcher/LauncherGrid.qml b/launcher/LauncherGrid.qml
-index a6f47e2..48c5732 100644
+index a6f47e2..89a3c09 100644
 --- a/usr/share/lipstick-jolla-home-qt5/launcher/LauncherGrid.qml
 +++ b/usr/share/lipstick-jolla-home-qt5/launcher/LauncherGrid.qml
-@@ -12,23 +12,41 @@ import Sailfish.Silica 1.0
+@@ -12,23 +12,62 @@ import Sailfish.Silica 1.0
  import Sailfish.Silica.private 1.0
  import Sailfish.Lipstick 1.0
  import "../main"
@@ -415,10 +415,31 @@ index a6f47e2..48c5732 100644
 +        property bool zoomFonts: false
 +        property real zoomValue: 1.0
 +    }
-+    property alias gridSettings: launcherGridSettings
 +
-+    property int orientation: __silica_applicationwindow_instance._pageOrientation
-+    property bool isPortrait: (orientation === Orientation.Portrait || orientation === Orientation.PortraitInverted || orientation === Orientation.None)
++    property bool isPortrait: launcherPager.height > launcherPager.width
++
++    add: Transition {
++        SequentialAnimation {
++            NumberAnimation { properties: "z"; to: -1; duration: 1 }
++            NumberAnimation { properties: "opacity"; to: 0.0; duration: 1 }
++            NumberAnimation { properties: "x,y"; duration: 1 }
++            NumberAnimation { properties: "z"; to: 0; duration: 200 }
++            NumberAnimation { properties: "opacity"; from: 0.0; to: 1.0; duration: 100 }
++        }
++    }
++    remove: Transition {
++        ParallelAnimation {
++            NumberAnimation { properties: "z"; to: -1; duration: 1 }
++            NumberAnimation { properties: "x"; to: 0; duration: 100 }
++            NumberAnimation { properties: "opacity"; to: 0.0; duration: 100 }
++        }
++    }
++    move: Transition {
++        NumberAnimation { properties: "x,y"; duration: 200 }
++    }
++    displaced: Transition {
++        NumberAnimation { properties: "x,y"; duration: 200 }
++    }
 +
      // The multipliers below for Large screens are magic. They look good on Jolla tablet.
      property real minimumCellWidth: Screen.sizeCategory >= Screen.Large ? Theme.itemSizeExtraLarge * 1.6 : Theme.itemSizeExtraLarge
@@ -430,7 +451,7 @@ index a6f47e2..48c5732 100644
 +    property int columns: isPortrait ? launcherGridSettings.columns : launcherGridSettings.lcolumns
      property int horizontalMargin: Screen.sizeCategory >= Screen.Large ? 6 * Theme.paddingLarge : Theme.paddingLarge
 -    property int initialCellWidth: (launcherPager.width - 2*horizontalMargin) / columns
-+    property int initialCellWidth: ((isPortrait ? launcherPager.width : launcherPager.height) - 2*horizontalMargin) / columns
++    property int initialCellWidth: (launcherPager.width - 2*horizontalMargin) / (columns + (isPortrait ? 0 : 1))
      property bool launcherEditMode: removeApplicationEnabled
      property var launcherModel: model
      property bool rootFolder
@@ -440,7 +461,7 @@ index a6f47e2..48c5732 100644
      property alias reorderItem: gridManager.reorderItem
      property alias gridManager: gridManager
      readonly property bool largeScreen: Screen.sizeCategory >= Screen.Large
-@@ -40,6 +58,13 @@ SilicaGridView {
+@@ -40,6 +79,13 @@ SilicaGridView {
      cellWidth: Math.floor(initialCellWidth + (initialCellWidth - Theme.iconSizeLauncher) / (columns - 1))
      cellHeight: Math.round(launcherPager.height / rows)
  
@@ -454,7 +475,7 @@ index a6f47e2..48c5732 100644
      function categoryQsTrIds() {
          //% "AudioVideo"
          QT_TRID_NOOP("lipstick-jolla-home-folder_audiovideo")
-@@ -75,14 +100,7 @@ SilicaGridView {
+@@ -75,14 +121,7 @@ SilicaGridView {
              openedChildFolder.close()
          }
  
@@ -470,7 +491,7 @@ index a6f47e2..48c5732 100644
      }
  
      function setEditMode(enabled) {
-@@ -252,28 +270,30 @@ SilicaGridView {
+@@ -252,28 +291,30 @@ SilicaGridView {
              }
          }
          onReleased: {
@@ -505,7 +526,7 @@ index a6f47e2..48c5732 100644
                  opacity: reorderItem && folderItemCount >= 99 ? 0.3 : 1.0
              }
          }
-@@ -291,12 +311,12 @@ SilicaGridView {
+@@ -291,12 +332,12 @@ SilicaGridView {
              }
              horizontalAlignment: Text.AlignHCenter
              elide: Text.ElideRight
@@ -521,7 +542,7 @@ index a6f47e2..48c5732 100644
          }
  
          Component {
-@@ -323,7 +343,7 @@ SilicaGridView {
+@@ -323,7 +364,7 @@ SilicaGridView {
                  enabled: launcherEditMode
                  opacity: enabled ? 1.0 : 0.0
                  visible: launcherEditMode && !isFolder && AppControl.isUninstallable(object.filePath) && !object.isUpdating
