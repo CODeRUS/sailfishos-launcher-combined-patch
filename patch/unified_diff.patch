@@ -1,13 +1,14 @@
 diff --git a/launcher/Launcher.qml b/launcher/Launcher.qml
-index 2355f00..92ef11e 100644
+index 40f0fe2..76e6cf1 100644
 --- a/usr/share/lipstick-jolla-home-qt5/launcher/Launcher.qml
 +++ b/usr/share/lipstick-jolla-home-qt5/launcher/Launcher.qml
-@@ -10,16 +10,27 @@ import org.nemomobile.lipstick 0.1
+@@ -10,17 +10,28 @@ import org.nemomobile.lipstick 0.1
  import Sailfish.Silica 1.0
  import Sailfish.Silica.private 1.0 as SilicaPrivate
  import Sailfish.Lipstick 1.0
--import org.nemomobile.dbus 1.0
+-import org.nemomobile.dbus 2.0
 +import org.nemomobile.configuration 1.0
+ import com.jolla.lipstick 0.1
  
  SilicaListView {
      id: launcherPager
@@ -18,7 +19,7 @@ index 2355f00..92ef11e 100644
 +        property bool freeScroll: false
 +        property bool useScroll: true
 +        onFreeScrollChanged: launcher.manageDummyPages()
-+    }
++    }    
 +
      property bool launcherActive: Lipstick.compositor.launcherLayer.active
      onLauncherActiveChanged: if (!launcherActive) { resetPosition(400) }
@@ -31,7 +32,7 @@ index 2355f00..92ef11e 100644
          if (editMode) {
              snapMode = ListView.NoSnap
              highlightRangeMode = ListView.NoHighlightRange
-@@ -29,13 +40,18 @@ SilicaListView {
+@@ -30,13 +41,18 @@ SilicaListView {
          }
      }
  
@@ -53,7 +54,7 @@ index 2355f00..92ef11e 100644
      cacheBuffer: height*model.count
      maximumFlickVelocity: 4000*Theme.pixelRatio
      highlightMoveDuration: 300
-@@ -119,8 +135,6 @@ SilicaListView {
+@@ -121,8 +137,6 @@ SilicaListView {
  
          LauncherGrid {
              id: launcher
@@ -62,7 +63,7 @@ index 2355f00..92ef11e 100644
  
              launcherEditMode: removeApplicationEnabled && !openedChildFolder
  
-@@ -163,11 +177,13 @@ SilicaListView {
+@@ -175,11 +189,13 @@ SilicaListView {
              Component.onCompleted: manageDummyPages()
              onContentHeightChanged: manageDummyPages()
              onLauncherEditModeChanged: manageDummyPages()
@@ -77,7 +78,7 @@ index 2355f00..92ef11e 100644
                      while (launcherPager.model.count < pageCount) {
                          launcherPager.model.append({ "name": "dummy" })
                      }
-@@ -181,46 +197,6 @@ SilicaListView {
+@@ -193,46 +209,6 @@ SilicaListView {
              SilicaPrivate.VisibilityCull {
                  target: launcher.contentItem
              }
@@ -115,7 +116,7 @@ index 2355f00..92ef11e 100644
 -
 -                    DBusInterface {
 -                        id: storeClientInterface
--                        destination: "com.jolla.jollastore"
+-                        service: "com.jolla.jollastore"
 -                        path: "/StoreClient"
 -                        iface: "com.jolla.jollastore"
 -                    }
@@ -125,7 +126,7 @@ index 2355f00..92ef11e 100644
      }
  }
 diff --git a/launcher/LauncherFolder.qml b/launcher/LauncherFolder.qml
-index 7d3ec17..8a725f3 100644
+index 3b9a354..af82f9a 100644
 --- a/usr/share/lipstick-jolla-home-qt5/launcher/LauncherFolder.qml
 +++ b/usr/share/lipstick-jolla-home-qt5/launcher/LauncherFolder.qml
 @@ -12,39 +12,21 @@ import Sailfish.Silica.private 1.0
@@ -154,8 +155,9 @@ index 7d3ec17..8a725f3 100644
 -        opacity = 0.0
 -        enabled = false
 -        destroy(450)
--    }
--
++        reject()
+     }
+ 
 -    z: 10
 -    opacity: 0.0
 -    Behavior on opacity { SmoothedAnimation { duration: 400; velocity: 1000 / duration } }
@@ -163,9 +165,8 @@ index 7d3ec17..8a725f3 100644
 -    gradient: Gradient {
 -        GradientStop { position: 0.0; color: Theme.rgba("black", 1.0) }
 -        GradientStop { position: 1.0; color: Theme.rgba("black", 0.8) }
-+        reject()
-     }
- 
+-    }
+-
 -    width: launcherPager.width
 -    height: launcherPager.height
 -
@@ -174,7 +175,7 @@ index 7d3ec17..8a725f3 100644
      Connections {
          target: Lipstick.compositor
          onDisplayOff: launcherFolder.close()
-@@ -90,7 +72,7 @@ Rectangle {
+@@ -91,7 +73,7 @@ Rectangle {
                  } else if (selectIcon) {
                      selectIcon = false
                  } else if (!launcherGrid.launcherEditMode) {
@@ -183,7 +184,7 @@ index 7d3ec17..8a725f3 100644
                  }
                  launcherGrid.setEditMode(false)
              }
-@@ -99,11 +81,12 @@ Rectangle {
+@@ -100,11 +82,12 @@ Rectangle {
          Rectangle {
              id: header
              width: parent.width
@@ -197,13 +198,14 @@ index 7d3ec17..8a725f3 100644
  
              Image {
                  anchors.horizontalCenter: parent.horizontalCenter
-@@ -111,21 +94,22 @@ Rectangle {
+@@ -112,22 +95,23 @@ Rectangle {
              }
  
              MouseArea {
 -                id: icon
--                width: launcherGrid.cellWidth
 +                id: iconHeader
+                 objectName: "LauncherFolder_icon"
+-                width: launcherGrid.cellWidth
 +                width: height
                  height: parent.height
 -                x: launcherGrid.x // launcherGrid is centered in it's parent
@@ -228,7 +230,7 @@ index 7d3ec17..8a725f3 100644
                      }
                  }
                  onClicked: {
-@@ -143,7 +127,7 @@ Rectangle {
+@@ -145,7 +129,7 @@ Rectangle {
              TextField {
                  id: titleEditor
                  anchors {
@@ -237,7 +239,7 @@ index 7d3ec17..8a725f3 100644
                      leftMargin: -Theme.paddingLarge
                      right: parent.right
                      verticalCenter: parent.verticalCenter
-@@ -177,8 +161,8 @@ Rectangle {
+@@ -179,8 +163,8 @@ Rectangle {
                  anchors {
                      right: titleEditor.right
                      rightMargin: Theme.horizontalPageMargin
@@ -248,7 +250,7 @@ index 7d3ec17..8a725f3 100644
                  }
                  font.pixelSize: Theme.fontSizeSmall
                  color: Theme.highlightColor
-@@ -195,8 +179,8 @@ Rectangle {
+@@ -197,8 +181,8 @@ Rectangle {
              // Use a clipper item to clip slightly outside the GridView area
              anchors.top: header.bottom
              width: parent.width
@@ -259,16 +261,15 @@ index 7d3ec17..8a725f3 100644
  
              LauncherGrid {
                  id: launcherGrid
-@@ -211,7 +195,7 @@ Rectangle {
+@@ -213,7 +197,6 @@ Rectangle {
                  }
  
                  gridManager.dragContainer: launcherFolder
 -                onItemLaunched: launcherFolder.close()
-+                //onItemLaunched: launcherFolder.close()
  
                  NumberAnimation {
                      id: contentYAnimation
-@@ -233,23 +217,24 @@ Rectangle {
+@@ -236,23 +219,24 @@ Rectangle {
                              } else if (selectIcon) {
                                  selectIcon = false
                              } else if (!launcherGrid.launcherEditMode) {
@@ -290,13 +291,13 @@ index 7d3ec17..8a725f3 100644
                  displayMarginBeginning: Theme.fontSizeExtraSmall/2
                  displayMarginEnd: Theme.fontSizeExtraSmall/2
                  enabled: !titleEditor.activeFocus && !selectIcon
-                 Behavior on opacity { FadeAnimation {} }
+                 Behavior on opacity { FadeAnimation { duration: 300 } }
                  opacity: enabled ? 1.0 : (selectIcon ? 0.0 : 0.3)
 +                footer: Item { width: 1; height: Theme.paddingSmall}
              }
          }
  
-@@ -260,20 +245,17 @@ Rectangle {
+@@ -263,21 +247,19 @@ Rectangle {
                  if (item) {
                      // The odd launcherGrid.reorderItem.y line below is to force revaluation of this binding
                      launcherGrid.reorderItem.y
@@ -308,90 +309,46 @@ index 7d3ec17..8a725f3 100644
                  }
                  return false
              }
+             property bool shown: (launcherGrid.launcherEditMode && launcherGrid.reorderItem ||
+                                   model.itemCount > launcherGrid.columns * visibleRowCount) && !selectIcon
 -            height: launcherGrid.cellHeight - Theme.fontSizeExtraSmall/2
 +            height: header.height
              width: parent.width
--            y: parent.height - (launcherGrid.launcherEditMode && launcherGrid.reorderItem ||
--                                model.itemCount > launcherGrid.columns * visibleRowCount ? height : 0)
+-            y: parent.height - (shown ? height : 0)
 -            Behavior on y { NumberAnimation { duration: 300; easing.type: Easing.InOutQuad } }
 +            y: 0
              opacity: launcherGrid.launcherEditMode && launcherGrid.reorderItem ?
 -                         (draggedIntoFooter ? 1.0 : 0.5) :
--                         (model.itemCount > launcherGrid.columns * visibleRowCount ? 0.5 : 0.0)
+-                         (model.itemCount > launcherGrid.columns * visibleRowCount && shown ? 0.5 : 0.0)
 +                         (draggedIntoFooter ? 1.0 : 0.8) : 0.0
              Behavior on opacity { FadeAnimation {} }
              color: Theme.highlightDimmerColor
              gradient: Gradient {
-@@ -297,37 +279,42 @@ Rectangle {
- 
-     Component {
-         id: iconSelectorComponent
--        Grid {
--            anchors.centerIn: launcherGrid
-+        SilicaGridView {
-+            height: parent.height
-+            width: launcherGrid.width
-+            anchors.horizontalCenter: parent.horizontalCenter
-+            cellWidth: launcherGrid.cellWidth
-+            cellHeight: launcherGrid.cellHeight
-             opacity: selectIcon ? 1.0 : 0.0
-             Behavior on opacity { FadeAnimation {} }
-             enabled: selectIcon
--            Repeater {
--                model: 16
--                delegate: MouseArea {
--                    id: folderIcon
--                    width: launcherGrid.cellWidth
--                    height: launcherGrid.cellHeight
--                    LauncherIcon {
--                        id: folderLauncherIcon
--                        anchors {
--                            centerIn: parent
--                            verticalCenterOffset: Math.round(-Theme.fontSizeExtraSmall/2)
--                        }
--                        icon: "image://theme/icon-launcher-folder-" + (index >= 9 ? (index+1) : "0" + (index+1))
--                        pressed: folderIcon.pressed && folderIcon.containsMouse
--                        opacity: icon.indexOf(launcherFolder.model.iconId) !== -1 ? 0.3 : 1.0
--                    }
--                    Image {
--                        anchors.centerIn: folderLauncherIcon
--                        source: folderLauncherIcon.opacity !== 1.0 ? "image://theme/icon-s-installed" : ""
--                    }
--                    onClicked: {
--                        launcherGrid.model.iconId = "icon-launcher-folder-" + (index >= 9 ? (index+1) : "0" + (index+1))
--                        selectIcon = false
-+            model: 20
-+            delegate: MouseArea {
-+                id: folderIcon
-+                width: cellWidth
-+                height: cellHeight
-+                FolderIconLoader {
-+                    id: folderLauncherIcon
-+                    anchors {
-+                        centerIn: parent
-+                        verticalCenterOffset: Math.round(-Theme.fontSizeExtraSmall/2)
-                     }
-+                    folder: launcherFolder.model
-+                    index: model.index
-+                    icon: "image://theme/icon-launcher-folder-" + (index >= 9 ? (index+1) : "0" + (index+1))
-+                    pressed: folderIcon.pressed && folderIcon.containsMouse
-+                    opacity: icon.indexOf(launcherFolder.model.iconId) !== -1 ? 0.3 : 1.0
-+                }
-+                Image {
-+                    anchors.centerIn: folderLauncherIcon
-+                    source: folderLauncherIcon.opacity !== 1.0 ? "image://theme/icon-s-installed" : ""
-+                }
-+                onClicked: {
-+                    launcherGrid.model.iconId = "icon-launcher-folder-" + (index >= 9 ? (index+1) : "0" + (index+1))
-+                    selectIcon = false
-                 }
-             }
-+            footer: Item { width: 1; height: Theme.paddingLarge }
-         }
-     }
- }
+@@ -328,18 +310,19 @@ Rectangle {
+                     id: folderIconGrid
+                     columns: Math.floor(launcherGrid.width/launcherGrid.cellWidth)
+                     Repeater {
+-                        model: 16
++                        model: 20
+                         delegate: MouseArea {
+                             id: folderIcon
+-                            objectName: "LauncherFolder_folderIcon"
+                             width: launcherGrid.cellWidth
+                             height: launcherGrid.cellHeight
+-                            LauncherIcon {
++                            FolderIconLoader {
+                                 id: folderLauncherIcon
+                                 anchors {
+                                     centerIn: parent
+                                     verticalCenterOffset: Math.round(-Theme.fontSizeExtraSmall/2)
+                                 }
++                                folder: launcherFolder.model
++                                index: model.index
+                                 icon: "image://theme/icon-launcher-folder-" + (index >= 9 ? (index+1) : "0" + (index+1))
+                                 pressed: folderIcon.pressed && folderIcon.containsMouse
+                                 opacity: icon.indexOf(launcherFolder.model.iconId) !== -1 ? 0.3 : 1.0
 diff --git a/launcher/LauncherGrid.qml b/launcher/LauncherGrid.qml
-index a6f47e2..89a3c09 100644
+index 2360cb0..a7237b5 100644
 --- a/usr/share/lipstick-jolla-home-qt5/launcher/LauncherGrid.qml
 +++ b/usr/share/lipstick-jolla-home-qt5/launcher/LauncherGrid.qml
 @@ -12,23 +12,62 @@ import Sailfish.Silica 1.0
@@ -522,26 +479,10 @@ index a6f47e2..89a3c09 100644
                  color: Theme.primaryColor
                  anchors.centerIn: parent
 -                visible: !isUpdating || model.object.updatingProgress < 0 || model.object.updatingProgress > 100
-+                visible: launcherIcon.index < 16 && (!isUpdating || model.object.updatingProgress < 0 || model.object.updatingProgress > 100)
++                visible: launcherIcon.index < 16 && (!launcherEditMode || isFolder || launcherGridSettings.editLabelVisible)
                  opacity: reorderItem && folderItemCount >= 99 ? 0.3 : 1.0
              }
          }
-@@ -291,12 +332,12 @@ SilicaGridView {
-             }
-             horizontalAlignment: Text.AlignHCenter
-             elide: Text.ElideRight
--
-+            smooth: true
-             color: down ? Theme.highlightColor : Theme.primaryColor
--            font.pixelSize: Theme.fontSizeTiny
-+            font.pixelSize: Theme.fontSizeTiny * (launcherGridSettings.zoomFonts ? launcherGridSettings.zoomValue : 1.0)
-             text: object.title
-             textFormat: Text.PlainText
--            visible: !launcherEditMode || isFolder
-+            visible: !launcherEditMode || isFolder || launcherGridSettings.editLabelVisible
-         }
- 
-         Component {
 @@ -323,7 +364,7 @@ SilicaGridView {
                  enabled: launcherEditMode
                  opacity: enabled ? 1.0 : 0.0
@@ -552,16 +493,16 @@ index a6f47e2..89a3c09 100644
          }
      }
 diff --git a/launcher/LauncherView.qml b/launcher/LauncherView.qml
-index 44e2122..d4b425f 100644
+index 44e2122..9e3377a 100644
 --- a/usr/share/lipstick-jolla-home-qt5/launcher/LauncherView.qml
 +++ b/usr/share/lipstick-jolla-home-qt5/launcher/LauncherView.qml
 @@ -3,6 +3,9 @@ import QtQuick 2.0
  import org.nemomobile.lipstick 0.1
  import Sailfish.Silica 1.0
  import com.jolla.lipstick 0.1
-+import org.nemomobile.dbus 1.0
 +import org.nemomobile.configuration 1.0
 +import Sailfish.Silica.private 1.0
++import org.nemomobile.dbus 2.0
  import "../main"
  
  ApplicationWindow {
@@ -641,7 +582,7 @@ index 44e2122..d4b425f 100644
 +
 +            DBusInterface {
 +                id: storeClientInterface
-+                destination: "com.jolla.jollastore"
++                service: "com.jolla.jollastore"
 +                path: "/StoreClient"
 +                iface: "com.jolla.jollastore"
 +            }

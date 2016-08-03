@@ -3,13 +3,13 @@ Name:       sailfishos-launcher-combined-patch
 BuildArch: noarch
 
 Summary:    Launcher combined patches
-Version:    0.3.0
+Version:    0.3.1
 Release:    1
 Group:      Qt/Qt
 License:    TODO
 Source0:    %{name}-%{version}.tar.bz2
 Requires:   patchmanager
-Requires:   sailfish-version >= 2.0.1
+Requires:   sailfish-version >= 2.0.2
 
 %description
 A homescreen patches for changing launcher grid size and adding new icon style showing folder icons
