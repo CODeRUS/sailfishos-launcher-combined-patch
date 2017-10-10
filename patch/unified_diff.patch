@@ -351,9 +351,9 @@ diff --git a/launcher/LauncherGrid.qml b/launcher/LauncherGrid.qml
 index 2360cb0..a7237b5 100644
 --- a/usr/share/lipstick-jolla-home-qt5/launcher/LauncherGrid.qml
 +++ b/usr/share/lipstick-jolla-home-qt5/launcher/LauncherGrid.qml
-@@ -12,23 +12,62 @@ import Sailfish.Silica 1.0
- import Sailfish.Silica.private 1.0
+@@ -13,23 +13,62 @@ import Sailfish.Silica 1.0
  import Sailfish.Lipstick 1.0
+ import Sailfish.Policy 1.0
  import "../main"
 +import org.nemomobile.configuration 1.0
  
@@ -406,7 +406,7 @@ index 2360cb0..a7237b5 100644
 -    property int columns: Math.floor(launcherPager.width / minimumCellWidth)
 +    property int rows: isPortrait ? launcherGridSettings.rows : launcherGridSettings.lrows
 +    property int columns: isPortrait ? launcherGridSettings.columns : launcherGridSettings.lcolumns
-     property int horizontalMargin: Screen.sizeCategory >= Screen.Large ? 6 * Theme.paddingLarge : Theme.paddingLarge
+     property int horizontalMargin: Screen.sizeCategory >= Screen.Large ? 6 * Theme.paddingLarge : Theme._homePageMargin
 -    property int initialCellWidth: (launcherPager.width - 2*horizontalMargin) / columns
 +    property int initialCellWidth: (launcherPager.width - 2*horizontalMargin) / (columns + (isPortrait ? 0 : 1))
      property bool launcherEditMode: removeApplicationEnabled
