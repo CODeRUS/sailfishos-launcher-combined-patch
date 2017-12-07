@@ -351,15 +351,15 @@ diff --git a/launcher/LauncherGrid.qml b/launcher/LauncherGrid.qml
 index 2360cb0..a7237b5 100644
 --- a/usr/share/lipstick-jolla-home-qt5/launcher/LauncherGrid.qml
 +++ b/usr/share/lipstick-jolla-home-qt5/launcher/LauncherGrid.qml
-@@ -12,23 +12,62 @@ import Sailfish.Silica 1.0
- import Sailfish.Silica.private 1.0
+@@ -13,23 +13,62 @@
+ import Sailfish.Policy 1.0
  import Sailfish.Lipstick 1.0
  import "../main"
 +import org.nemomobile.configuration 1.0
  
  SilicaGridView {
      id: gridview
- 
++	
 +    ConfigurationGroup {
 +        id: launcherGridSettings
 +        path: "/apps/lipstick-jolla-home-qt5/launcherGrid"
@@ -397,7 +397,7 @@ index 2360cb0..a7237b5 100644
 +    displaced: Transition {
 +        NumberAnimation { properties: "x,y"; duration: 200 }
 +    }
-+
+ 
      // The multipliers below for Large screens are magic. They look good on Jolla tablet.
      property real minimumCellWidth: Screen.sizeCategory >= Screen.Large ? Theme.itemSizeExtraLarge * 1.6 : Theme.itemSizeExtraLarge
      // phone reference row height: 960 / 6
@@ -406,7 +406,7 @@ index 2360cb0..a7237b5 100644
 -    property int columns: Math.floor(launcherPager.width / minimumCellWidth)
 +    property int rows: isPortrait ? launcherGridSettings.rows : launcherGridSettings.lrows
 +    property int columns: isPortrait ? launcherGridSettings.columns : launcherGridSettings.lcolumns
-     property int horizontalMargin: Screen.sizeCategory >= Screen.Large ? 6 * Theme.paddingLarge : Theme.paddingLarge
+     property int horizontalMargin: Screen.sizeCategory >= Screen.Large ? 6 * Theme.paddingLarge : Theme._homePageMargin
 -    property int initialCellWidth: (launcherPager.width - 2*horizontalMargin) / columns
 +    property int initialCellWidth: (launcherPager.width - 2*horizontalMargin) / (columns + (isPortrait ? 0 : 1))
      property bool launcherEditMode: removeApplicationEnabled
@@ -418,24 +418,25 @@ index 2360cb0..a7237b5 100644
      property alias reorderItem: gridManager.reorderItem
      property alias gridManager: gridManager
      readonly property bool largeScreen: Screen.sizeCategory >= Screen.Large
-@@ -40,6 +79,13 @@ SilicaGridView {
+@@ -40,6 +79,13 @@
+     // Increase cellWidth so that icon vertical edges are Theme.paddingLarge away from display edges
      cellWidth: Math.floor(initialCellWidth + (initialCellWidth - Theme.iconSizeLauncher) / (columns - 1))
      cellHeight: Math.round(launcherPager.height / rows)
- 
++	
 +    onCellHeightChanged: updateHintHeight()
 +    Component.onCompleted: updateHintHeight()
 +
 +    function updateHintHeight() {
 +        Lipstick.compositor.launcherLayer.hintHeight = cellHeight
 +    }
-+
+ 
      function categoryQsTrIds() {
          //% "AudioVideo"
-         QT_TRID_NOOP("lipstick-jolla-home-folder_audiovideo")
-@@ -75,14 +121,7 @@ SilicaGridView {
+@@ -75,15 +121,7 @@
+             // should never happen
              openedChildFolder.close()
          }
- 
+-
 -        if (!folderComponent) {
 -            folderComponent = Qt.createComponent("LauncherFolder.qml")
 -            if (folderComponent.status == Component.Error) {
@@ -444,11 +445,11 @@ index 2360cb0..a7237b5 100644
 -            }
 -        }
 -        openedChildFolder = folderComponent.createObject(launcherPager, { 'model': folder })
-+        openedChildFolder = pageStack.push(Qt.resolvedUrl("LauncherFolder.qml"), { 'model': folder, 'launcherPager': launcherPager })
++		openedChildFolder = pageStack.push(Qt.resolvedUrl("LauncherFolder.qml"), { 'model': folder, 'launcherPager': launcherPager })
      }
  
      function setEditMode(enabled) {
-@@ -252,28 +291,30 @@ SilicaGridView {
+@@ -260,28 +298,30 @@
              }
          }
          onReleased: {
@@ -467,10 +468,10 @@ index 2360cb0..a7237b5 100644
                  verticalCenterOffset: Math.floor(-launcherText.height/2)
              }
              icon: model.object.iconId
-+            folder: model.object
++			folder: model.object
              pressed: down
              opacity: isUpdating && folderItemCount == 0 ? 0.2 : 1.0
-+            size: Theme.iconSizeLauncher * (launcherGridSettings.zoomIcons ? launcherGridSettings.zoomValue : 1.0)
++			size: Theme.iconSizeLauncher * (launcherGridSettings.zoomIcons ? launcherGridSettings.zoomValue : 1.0)
              Text {
 -                font.pixelSize: Theme.fontSizeExtraLarge
 +                font.pixelSize: Theme.fontSizeExtraLarge * (launcherGridSettings.zoomIcons ? launcherGridSettings.zoomValue : 1.0)
@@ -483,8 +484,8 @@ index 2360cb0..a7237b5 100644
                  opacity: reorderItem && folderItemCount >= 99 ? 0.3 : 1.0
              }
          }
-@@ -323,7 +364,7 @@ SilicaGridView {
-                 enabled: launcherEditMode
+@@ -331,7 +371,7 @@
+                 enabled: launcherEditMode && policy.value
                  opacity: enabled ? 1.0 : 0.0
                  visible: launcherEditMode && !isFolder && AppControl.isUninstallable(object.filePath) && !object.isUpdating
 -                onClicked: launcher.removeApplication(object.filePath, object.title)
@@ -492,6 +493,7 @@ index 2360cb0..a7237b5 100644
              }
          }
      }
+
 diff --git a/launcher/LauncherView.qml b/launcher/LauncherView.qml
 index 44e2122..9e3377a 100644
 --- a/usr/share/lipstick-jolla-home-qt5/launcher/LauncherView.qml
